@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Craftura.ai — Three-Layer Agent Architecture</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --accent: #8b5cf6;
+    --accent2: #06b6d4;
+    --accent3: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+  }
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .slide::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: var(--border);
+  }
+  .slide:last-child::after { display: none; }
+  h1 { font-size: 3.5rem; font-weight: 700; line-height: 1.1; margin-bottom: 1rem; }
+  h2 { font-size: 2.5rem; font-weight: 600; margin-bottom: 1.5rem; }
+  h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+  p, li { font-size: 1.25rem; color: var(--muted); max-width: 700px; }
+  .subtitle { font-size: 1.5rem; color: var(--muted); max-width: 600px; text-align: center; }
+  .accent { color: var(--accent); }
+  .accent2 { color: var(--accent2); }
+  .accent3 { color: var(--accent3); }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  
+  .layers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 2rem;
+  }
+  .layer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .layer-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .layer-card:nth-child(1)::before { background: var(--accent); }
+  .layer-card:nth-child(2)::before { background: var(--accent2); }
+  .layer-card:nth-child(3)::before { background: var(--accent3); }
+  .layer-number {
+    font-size: 4rem;
+    font-weight: 800;
+    opacity: 0.1;
+    position: absolute;
+    top: -0.5rem;
+    right: 1rem;
+  }
+  .layer-card h3 { margin-bottom: 1rem; }
+  .layer-card ul { list-style: none; padding: 0; }
+  .layer-card li {
+    font-size: 1rem;
+    padding: 0.25rem 0;
+    color: var(--text);
+  }
+  .layer-card li::before {
+    content: '→ ';
+    opacity: 0.5;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    min-width: 180px;
+  }
+  .flow-box.accent { border-color: var(--accent); }
+  .flow-box.accent2 { border-color: var(--accent2); }
+  .flow-box.accent3 { border-color: var(--accent3); }
+  .flow-arrow { font-size: 1.5rem; color: var(--muted); }
+
+  .comparison-table {
+    width: 100%;
+    max-width: 900px;
+    margin-top: 2rem;
+    border-collapse: collapse;
+  }
+  .comparison-table th, .comparison-table td {
+    padding: 1rem 1.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 1rem;
+  }
+  .comparison-table th {
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+  }
+  .comparison-table td { color: var(--text); }
+
+  .quote-box {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 1.5rem 2rem;
+    margin-top: 2rem;
+    max-width: 800px;
+    font-style: italic;
+    color: var(--text);
+    font-size: 1.1rem;
+  }
+  .quote-box cite {
+    display: block;
+    margin-top: 0.75rem;
+    font-style: normal;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 2rem;
+  }
+  .status-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .status-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+  .status-card h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+  .status-card p { font-size: 0.9rem; color: var(--muted); }
+
+  .big-statement {
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    max-width: 800px;
+    line-height: 1.4;
+  }
+  .big-statement em { color: var(--accent); font-style: normal; }
+
+  .tag {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0.25rem;
+  }
+
+  .logo-text {
+    font-size: 1rem;
+    color: var(--muted);
+    position: absolute;
+    top: 2rem;
+    right: 3rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 768px) {
+    .layers-grid, .status-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    .flow-diagram { flex-direction: column; }
+    .slide { padding: 2rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide">
+  <span class="logo-text">Craftura.ai</span>
+  <h1>The Three-Layer<br><span class="accent">Agent Architecture</span></h1>
+  <p class="subtitle" style="margin-top: 1.5rem;">
+    Why Supabase is NOT Jade's brain — and what that actually means for deployment.
+  </p>
+  <div style="margin-top: 3rem;">
+    <span class="tag">CrewAI</span>
+    <span class="tag">Anthropic</span>
+    <span class="tag">Microsoft AutoGen</span>
+    <span class="tag">Supabase</span>
+    <span class="tag">LangChain</span>
+    <span class="tag">50+ Sources</span>
+  </div>
+</div>
+
+<!-- SLIDE 2: The Core Problem -->
+<div class="slide">
+  <h2>The Argument</h2>
+  <p class="big-statement" style="font-size: 1.5rem;">
+    Calling Supabase "Jade's brain" conflates <span class="accent3">storage</span> with <span class="accent2">cognition</span>. 
+    A database does not think. An LLM thinks but has no memory. Agent code takes action but can't reason without an LLM.
+  </p>
+  <div class="quote-box" style="margin-top: 2rem;">
+    "Every large language model resets between sessions — there is no built-in persistence, no recall of prior interactions, and no accumulated knowledge from previous agent runs. This statelessness is a design choice, not a flaw."
+    <cite>— Atlan, "Memory Layer for AI Agents"</cite>
+  </div>
+</div>
+
+<!-- SLIDE 3: Three Layers -->
+<div class="slide">
+  <h2>The Three Layers</h2>
+  <div class="layers-grid">
+    <div class="layer-card">
+      <span class="layer-number">01</span>
+      <h3 class="accent">Agent Runtime</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">The Body</p>
+      <ul>
+        <li>Python code that runs agents</li>
+        <li>Routes work between specialists</li>
+        <li>Manages pipeline state</li>
+        <li>Calls tools, APIs, databases</li>
+        <li>Enforces guardrails &amp; cost controls</li>
+      </ul>
+      <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--muted);">
+        <strong>Your code:</strong> CrafturaFlow, CrafturaCrew, Jade routing
+      </p>
+    </div>
+    <div class="layer-card">
+      <span class="layer-number">02</span>
+      <h3 class="accent2">LLM Processing</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">The Thinking Engine</p>
+      <ul>
+        <li>Stateless reasoning via API</li>
+        <li>Analyzes, generates, decides</li>
+        <li>Each call is independent</li>
+        <li>No memory between calls</li>
+        <li>Rented compute intelligence</li>
+      </ul>
+      <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--muted);">
+        <strong>Your stack:</strong> GPT-4, Claude, Gemini, llama.cpp
+      </p>
+    </div>
+    <div class="layer-card">
+      <span class="layer-number">03</span>
+      <h3 class="accent3">Data &amp; Memory</h3>
+      <p style="font-size: 0.9rem; margin-bottom: 1rem;">The Hard Drive (Supabase)</p>
+      <ul>
+        <li>Persistent storage across sessions</li>
+        <li>Structured data with ACID guarantees</li>
+        <li>Identity, projects, conversations</li>
+        <li>Audit trails &amp; references</li>
+        <li>Row-level security for access control</li>
+      </ul>
+      <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--muted);">
+        <strong>Your schema:</strong> brain_profile, brain_projects, brain_conversations
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: The Flow -->
+<div class="slide">
+  <h2>How the Layers Connect</h2>
+  <div class="flow-diagram">
+    <div class="flow-box" style="border-color: var(--muted);">
+      <div style="font-size: 0.8rem; color: var(--muted);">TRIGGER</div>
+      <strong>Lead / Command<br>Schedule / Webhook</strong>
+    </div>
+    <span class="flow-arrow">→</span>
+    <div class="flow-box accent">
+      <div style="font-size: 0.8rem; color: var(--accent);">LAYER 1</div>
+      <strong>Agent Runtime</strong>
+      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">CrafturaFlow</div>
+    </div>
+    <span class="flow-arrow">↔</span>
+    <div class="flow-box accent2">
+      <div style="font-size: 0.8rem; color: var(--accent2);">LAYER 2</div>
+      <strong>LLM API</strong>
+      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">GPT-4 / Claude</div>
+    </div>
+    <span class="flow-arrow">↔</span>
+    <div class="flow-box accent3">
+      <div style="font-size: 0.8rem; color: var(--accent3);">LAYER 3</div>
+      <strong>Supabase</strong>
+      <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">Postgres DB</div>
+    </div>
+  </div>
+  <div class="quote-box" style="margin-top: 2rem;">
+    "A memory layer works by intercepting agent interactions, extracting relevant facts, storing them in an external store, and retrieving them at the start of future sessions."
+    <cite>— Atlan, on how memory layers actually work</cite>
+  </div>
+</div>
+
+<!-- SLIDE 5: What's Wrong -->
+<div class="slide">
+  <h2>The "Brain" Terminology Problem</h2>
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>What's Said</th>
+        <th>Why It's Wrong</th>
+        <th>What's True</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>"Supabase is Jade's brain"</td>
+        <td class="red">A database doesn't think</td>
+        <td class="green">Supabase stores memory data</td>
+      </tr>
+      <tr>
+        <td>"Jade lives in Supabase"</td>
+        <td class="red">Code runs as a process, not in a DB</td>
+        <td class="green">Jade's runtime loads from Supabase</td>
+      </tr>
+      <tr>
+        <td>"The brain loads context"</td>
+        <td class="red">Databases don't load context</td>
+        <td class="green">Runtime calls load_brain()</td>
+      </tr>
+      <tr>
+        <td>"Brain functions think"</td>
+        <td class="red">SQL returns data, doesn't reason</td>
+        <td class="green">LLM reasons over loaded data</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SLIDE 6: Evidence from Code -->
+<div class="slide">
+  <h2>Evidence From Your Own Code</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; margin-top: 1.5rem;">
+    <div class="layer-card" style="border-color: var(--accent);">
+      <h3 style="font-size: 1rem;">BOOTSTRAP_PROMPTS.md</h3>
+      <p style="font-size: 0.85rem; color: var(--muted);">
+        "The brain lives in the Supabase project named Jade. The database is the source of truth; this prompt is only a bootstrap.<br><br>
+        On every session start, call <code>SELECT load_brain()</code>..."
+      </p>
+      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ The brain is DATA that gets LOADED</p>
+    </div>
+    <div class="layer-card" style="border-color: var(--accent2);">
+      <h3 style="font-size: 1rem;">main.py — CrafturaFlow</h3>
+      <p style="font-size: 0.85rem; color: var(--muted);">
+        <code>class CrafturaFlow(Flow[StudioState]):</code><br>
+        "Jade Executive Assistant - Studio Orchestrator"<br><br>
+        Routes leads through 10-stage pipeline, manages state, escalates when needed.
+      </p>
+      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ This is RUNTIME CODE that needs to run</p>
+    </div>
+    <div class="layer-card" style="border-color: var(--accent3);">
+      <h3 style="font-size: 1rem;">jade-brain-v1.sql</h3>
+      <p style="font-size: 0.85rem; color: var(--muted);">
+        <code>create table brain_profile (...)</code><br>
+        <code>create function load_brain() returns jsonb</code><br><br>
+        SQL schema with tables, indexes, triggers, RLS policies.
+      </p>
+      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ This is DATABASE SCHEMA (storage)</p>
+    </div>
+    <div class="layer-card" style="border-color: var(--green);">
+      <h3 style="font-size: 1rem;">hosting-iteration-research.md</h3>
+      <p style="font-size: 0.85rem; color: var(--muted);">
+        "Use a local-first control plane:<br>
+        • Run CrafturaFlow locally (Layer 1)<br>
+        • Keep llama.cpp as model host (Layer 2)"
+      </p>
+      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ Your own research separates the layers</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Industry Consensus -->
+<div class="slide">
+  <h2>What Industry Says</h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; margin-top: 1.5rem;">
+    <div>
+      <h3 class="accent" style="font-size: 1.1rem;">LLMs Are Stateless</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Atlan: "Every LLM resets between sessions"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Mem0: "It looks at you for the first time every request"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ CrewAI: Memory is a separate component</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ LangChain: External stores for persistence</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="accent2" style="font-size: 1.1rem;">Orchestration Is Separate</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Anthropic: Orchestrator-worker architecture</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Microsoft AutoGen: Agents + LLMs + tools compose</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Google ADK: Multi-agent hierarchy framework</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ OpenAI AgentKit: Runtime orchestration layer</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="accent3" style="font-size: 1.1rem;">Memory Is Infrastructure</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Atlan: "Infrastructure that persists information"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Mem0: "External Context (Disk) vs Main Context (RAM)"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Supabase: "Postgres platform for agentic workloads"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Gartner: "60% of AI projects fail from data gaps"</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="green" style="font-size: 1.1rem;">All Three Must Exist</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ McKinsey: "Infrastructure for agentic AI"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Anthropic: "Agents are stateful webs of prompts, tools, execution logic"</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ arXiv/ICLR 2026: Context management improves performance 10.6%</li>
+        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Snowflake: Ontology layer improves accuracy by 20%</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Deployment Reality -->
+<div class="slide">
+  <h2>Current Status</h2>
+  <div class="status-grid">
+    <div class="status-card">
+      <div class="status-icon">⚠️</div>
+      <h3 class="accent">Layer 1: Runtime</h3>
+      <p>Code exists in repos.<br><strong style="color: var(--red);">Not deployed as running process.</strong></p>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✅</div>
+      <h3 class="accent2">Layer 2: LLM APIs</h3>
+      <p>OpenAI, Anthropic, Google configured.<br><strong style="color: var(--green);">Working.</strong></p>
+    </div>
+    <div class="status-card">
+      <div class="status-icon">✅</div>
+      <h3 class="accent3">Layer 3: Supabase</h3>
+      <p>Schema deployed, functions created.<br><strong style="color: var(--green);">Working.</strong></p>
+    </div>
+  </div>
+  <div class="quote-box" style="margin-top: 2rem;">
+    "Supabase is not a brain. Supabase is memory storage. LLMs are not agents — they're reasoning engines. Agent runtime code is not data — it's the thing that makes decisions and takes action."
+  </div>
+</div>
+
+<!-- SLIDE 9: Correct Mental Model -->
+<div class="slide">
+  <h2>The Correct Mental Model</h2>
+  <div style="margin-top: 2rem;">
+    <table class="comparison-table" style="max-width: 700px;">
+      <thead>
+        <tr>
+          <th>Human</th>
+          <th>AI System</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Body (moves &amp; acts)</td>
+          <td class="accent">Agent Runtime — CrafturaFlow, CrewAI</td>
+        </tr>
+        <tr>
+          <td>Brain (thinks &amp; reasons)</td>
+          <td class="accent2">LLM API — GPT-4, Claude, Gemini</td
