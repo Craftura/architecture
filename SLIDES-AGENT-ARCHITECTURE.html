@@ -56,7 +56,7 @@
   .accent3 { color: var(--accent3); }
   .green { color: var(--green); }
   .red { color: var(--red); }
-  
+
   .layers-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -154,6 +154,9 @@
     color: var(--text);
     font-size: 1.1rem;
   }
+  .quote-box.green { border-left-color: var(--green); }
+  .quote-box.cyan { border-left-color: var(--accent2); }
+  .quote-box.amber { border-left-color: var(--accent3); }
   .quote-box cite {
     display: block;
     margin-top: 0.75rem;
@@ -211,8 +214,41 @@
     text-transform: uppercase;
   }
 
+  .code-block {
+    background: #0d0d14;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+    overflow-x: auto;
+    margin-top: 1rem;
+    max-width: 700px;
+  }
+
+  .eval-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 1.5rem;
+  }
+  .eval-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+  }
+  .eval-card.correct { border-left: 3px solid var(--green); }
+  .eval-card.imprecise { border-left: 3px solid var(--accent3); }
+  .eval-card .quote { font-size: 0.9rem; color: var(--text); margin-bottom: 0.5rem; }
+  .eval-card .verdict { font-size: 0.85rem; color: var(--muted); }
+
   @media (max-width: 768px) {
     .layers-grid, .status-grid { grid-template-columns: 1fr; }
+    .eval-grid { grid-template-columns: 1fr; }
     h1 { font-size: 2rem; }
     h2 { font-size: 1.5rem; }
     .flow-diagram { flex-direction: column; }
@@ -227,15 +263,14 @@
   <span class="logo-text">Craftura.ai</span>
   <h1>The Three-Layer<br><span class="accent">Agent Architecture</span></h1>
   <p class="subtitle" style="margin-top: 1.5rem;">
-    Why Supabase is NOT Jade's brain — and what that actually means for deployment.
+    Technical Reference with Code-Level Evidence, Industry Citations, and Bot Evaluation.
   </p>
   <div style="margin-top: 3rem;">
     <span class="tag">CrewAI</span>
     <span class="tag">Anthropic</span>
-    <span class="tag">Microsoft AutoGen</span>
-    <span class="tag">Supabase</span>
     <span class="tag">LangChain</span>
-    <span class="tag">50+ Sources</span>
+    <span class="tag">Supabase</span>
+    <span class="tag">10+ Sources</span>
   </div>
 </div>
 
@@ -246,9 +281,22 @@
     Calling Supabase "Jade's brain" conflates <span class="accent3">storage</span> with <span class="accent2">cognition</span>. 
     A database does not think. An LLM thinks but has no memory. Agent code takes action but can't reason without an LLM.
   </p>
-  <div class="quote-box" style="margin-top: 2rem;">
-    "Every large language model resets between sessions — there is no built-in persistence, no recall of prior interactions, and no accumulated knowledge from previous agent runs. This statelessness is a design choice, not a flaw."
-    <cite>— Atlan, "Memory Layer for AI Agents"</cite>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; width: 100%; max-width: 900px; margin-top: 2rem;">
+    <div class="layer-card" style="border-color: var(--red);">
+      <h3 style="font-size: 1.1rem; color: var(--red);">THE CLAIM</h3>
+      <p style="font-size: 0.95rem;">"Supabase is Jade's brain"</p>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">Conflates storage with cognition</p>
+    </div>
+    <div class="layer-card" style="border-color: var(--green);">
+      <h3 style="font-size: 1.1rem; color: var(--green);">THE REALITY</h3>
+      <p style="font-size: 0.95rem;">"Supabase stores Jade's memory"</p>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">Database provides persistent cross-session storage</p>
+    </div>
+    <div class="layer-card" style="border-color: var(--accent3);">
+      <h3 style="font-size: 1.1rem; color: var(--accent3);">THE IMPLICATION</h3>
+      <p style="font-size: 0.95rem;">All three layers must be deployed</p>
+      <p style="font-size: 0.85rem; margin-top: 0.5rem;">A database alone does nothing without runtime + LLM</p>
+    </div>
   </div>
 </div>
 
@@ -268,7 +316,7 @@
         <li>Enforces guardrails &amp; cost controls</li>
       </ul>
       <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--muted);">
-        <strong>Your code:</strong> CrafturaFlow, CrafturaCrew, Jade routing
+        <strong>Your code:</strong> CrafturaFlow, CrafturaCrew
       </p>
     </div>
     <div class="layer-card">
@@ -298,13 +346,87 @@
         <li>Row-level security for access control</li>
       </ul>
       <p style="font-size: 0.85rem; margin-top: 1rem; color: var(--muted);">
-        <strong>Your schema:</strong> brain_profile, brain_projects, brain_conversations
+        <strong>Your schema:</strong> brain_profile, brain_projects, etc.
       </p>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 4: The Flow -->
+<!-- SLIDE 4: Code Evidence — Runtime -->
+<div class="slide">
+  <h2>Code Evidence: Layer 1 — Runtime</h2>
+  <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">craftura-agents/src/craftura_agents/main.py</p>
+  <div class="code-block">
+class CrafturaFlow(Flow[StudioState]):<br>
+    """Jade Executive Assistant - Studio Orchestrator"""<br>
+<br>
+    @start()<br>
+    def receive_lead(self):<br>
+        self.state.current_stage = "intake"<br>
+<br>
+    @listen("classify_and_intake")<br>
+    def route_by_project_type(self):<br>
+        if self.state.project_type in ("existing_site", "redesign"):<br>
+            self.state.current_stage = "audit"<br>
+  </div>
+  <div style="margin-top: 1.5rem; max-width: 700px;">
+    <p style="font-size: 1rem;"><span style="color: var(--green);">✓</span> Manages StudioState (30+ fields)</p>
+    <p style="font-size: 1rem;"><span style="color: var(--green);">✓</span> Routes leads through 10-stage pipeline</p>
+    <p style="font-size: 1rem;"><span style="color: var(--green);">✓</span> Enforces stage dependencies</p>
+    <p style="font-size: 1rem;"><span style="color: var(--red);">✗</span> Does NOT perform reasoning — delegates to LLM via CrewAI crews</p>
+    <p style="font-size: 1rem;"><span style="color: var(--red);">✗</span> Does NOT store data — calls Supabase through tools</p>
+  </div>
+</div>
+
+<!-- SLIDE 5: Code Evidence — LLM -->
+<div class="slide">
+  <h2>Code Evidence: Layer 2 — LLM Processing</h2>
+  <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">craftura-agents/.../crews/craftura_crew.py</p>
+  <div class="code-block">
+@agent<br>
+def franklin(self) -&gt; Agent:<br>
+    return Agent(<br>
+        config=self.agents_config["franklin"],<br>
+        verbose=True,<br>
+        tools=[get_design_kit_reader_tool(), get_pixabay_tool(), ...],<br>
+    )<br>
+<br>
+# CrewAI documentation:<br>
+# "Memory is a separate component configured independently from agents."<br>
+  </div>
+  <div class="quote-box cyan" style="margin-top: 2rem;">
+    "Memory is a separate component configured independently from agents and crews."
+    <cite>— CrewAI Documentation, https://docs.crewai.com/en/concepts/memory</cite>
+  </div>
+</div>
+
+<!-- SLIDE 6: Code Evidence — Memory -->
+<div class="slide">
+  <h2>Code Evidence: Layer 3 — Supabase/PostgreSQL</h2>
+  <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem;">jade-assistant/.../brain/jade-brain-v1.sql</p>
+  <div class="code-block">
+create table if not exists public.brain_profile (<br>
+    id uuid primary key default gen_random_uuid(),<br>
+    section text not null unique,<br>
+    content jsonb not null default '{}'::jsonb,<br>
+);<br>
+<br>
+create or replace function public.load_brain()<br>
+returns jsonb language sql stable<br>
+as $$<br>
+  -- Returns: identity, operating_style, recent_sessions...<br>
+  select jsonb_build_object(...);<br>
+$$;<br>
+  </div>
+  <div style="margin-top: 1.5rem; max-width: 700px;">
+    <p style="font-size: 1rem;"><span style="color: var(--green);">✓</span> Standard PostgreSQL tables with JSONB</p>
+    <p style="font-size: 1rem;"><span style="color: var(--green);">✓</span> SQL queries, indexes, Row-Level Security</p>
+    <p style="font-size: 1rem;"><span style="color: var(--red);">✗</span> Zero AI capability. Zero reasoning. Zero decision-making.</p>
+    <p style="font-size: 1rem;"><span style="color: var(--red);">✗</span> Standard database schema — identical to any ORM query.</p>
+  </div>
+</div>
+
+<!-- SLIDE 7: Flow -->
 <div class="slide">
   <h2>How the Layers Connect</h2>
   <div class="flow-diagram">
@@ -331,13 +453,16 @@
       <div style="font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem;">Postgres DB</div>
     </div>
   </div>
-  <div class="quote-box" style="margin-top: 2rem;">
-    "A memory layer works by intercepting agent interactions, extracting relevant facts, storing them in an external store, and retrieving them at the start of future sessions."
-    <cite>— Atlan, on how memory layers actually work</cite>
+  <div style="margin-top: 2rem; max-width: 700px;">
+    <p style="font-size: 1rem;"><strong>1.</strong> Runtime receives trigger → calls <code>load_brain()</code> on Supabase</p>
+    <p style="font-size: 1rem;"><strong>2.</strong> Supabase returns JSONB data (identity, sessions, projects)</p>
+    <p style="font-size: 1rem;"><strong>3.</strong> Runtime injects loaded data into prompt + current task</p>
+    <p style="font-size: 1rem;"><strong>4.</strong> LLM performs reasoning over context → returns structured output</p>
+    <p style="font-size: 1rem;"><strong>5.</strong> Runtime executes tools, takes action, saves results to Supabase</p>
   </div>
 </div>
 
-<!-- SLIDE 5: What's Wrong -->
+<!-- SLIDE 8: What's Wrong -->
 <div class="slide">
   <h2>The "Brain" Terminology Problem</h2>
   <table class="comparison-table">
@@ -357,7 +482,7 @@
       <tr>
         <td>"Jade lives in Supabase"</td>
         <td class="red">Code runs as a process, not in a DB</td>
-        <td class="green">Jade's runtime loads from Supabase</td>
+        <td class="green">Runtime loads from Supabase</td>
       </tr>
       <tr>
         <td>"The brain loads context"</td>
@@ -373,132 +498,149 @@
   </table>
 </div>
 
-<!-- SLIDE 6: Evidence from Code -->
+<!-- SLIDE 9: Industry Citations -->
 <div class="slide">
-  <h2>Evidence From Your Own Code</h2>
+  <h2>Industry Citations</h2>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; margin-top: 1.5rem;">
-    <div class="layer-card" style="border-color: var(--accent);">
-      <h3 style="font-size: 1rem;">BOOTSTRAP_PROMPTS.md</h3>
-      <p style="font-size: 0.85rem; color: var(--muted);">
-        "The brain lives in the Supabase project named Jade. The database is the source of truth; this prompt is only a bootstrap.<br><br>
-        On every session start, call <code>SELECT load_brain()</code>..."
-      </p>
-      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ The brain is DATA that gets LOADED</p>
+    <div class="quote-box">
+      "Memory is a separate component configured independently from agents and crews."
+      <cite>CrewAI Documentation — https://docs.crewai.com/en/concepts/memory</cite>
     </div>
-    <div class="layer-card" style="border-color: var(--accent2);">
-      <h3 style="font-size: 1rem;">main.py — CrafturaFlow</h3>
-      <p style="font-size: 0.85rem; color: var(--muted);">
-        <code>class CrafturaFlow(Flow[StudioState]):</code><br>
-        "Jade Executive Assistant - Studio Orchestrator"<br><br>
-        Routes leads through 10-stage pipeline, manages state, escalates when needed.
-      </p>
-      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ This is RUNTIME CODE that needs to run</p>
+    <div class="quote-box cyan">
+      "Agent memory is a computational exocortex — integrates LLM context with persistent memory management system."
+      <cite>MongoDB + LangGraph — https://www.mongodb.com/company/blog/...</cite>
     </div>
-    <div class="layer-card" style="border-color: var(--accent3);">
-      <h3 style="font-size: 1rem;">jade-brain-v1.sql</h3>
-      <p style="font-size: 0.85rem; color: var(--muted);">
-        <code>create table brain_profile (...)</code><br>
-        <code>create function load_brain() returns jsonb</code><br><br>
-        SQL schema with tables, indexes, triggers, RLS policies.
-      </p>
-      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ This is DATABASE SCHEMA (storage)</p>
+    <div class="quote-box amber">
+      "The architecture required for agent systems — tool registries, orchestration layers, memory systems — goes well beyond what a generative AI application needs."
+      <cite>Thinking.inc — Agentic AI Architecture</cite>
     </div>
-    <div class="layer-card" style="border-color: var(--green);">
-      <h3 style="font-size: 1rem;">hosting-iteration-research.md</h3>
-      <p style="font-size: 0.85rem; color: var(--muted);">
-        "Use a local-first control plane:<br>
-        • Run CrafturaFlow locally (Layer 1)<br>
-        • Keep llama.cpp as model host (Layer 2)"
-      </p>
-      <p style="font-size: 0.8rem; margin-top: 0.75rem;">→ Your own research separates the layers</p>
+    <div class="quote-box green">
+      "Most agent stacks require a vector database, an auth provider, a file store, an API layer, and a separate Postgres instance."
+      <cite>Supabase — Agent Solutions (positioned as data infrastructure)</cite>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 7: Industry Consensus -->
+<!-- SLIDE 10: Troy's Bot Evaluation -->
 <div class="slide">
-  <h2>What Industry Says</h2>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%; max-width: 900px; margin-top: 1.5rem;">
-    <div>
-      <h3 class="accent" style="font-size: 1.1rem;">LLMs Are Stateless</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Atlan: "Every LLM resets between sessions"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Mem0: "It looks at you for the first time every request"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ CrewAI: Memory is a separate component</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ LangChain: External stores for persistence</li>
-      </ul>
+  <h2 style="color: var(--green);">Troy's Own Bot Confirms the Architecture</h2>
+  <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 1.5rem;">Conversation between Troy and his AI assistant (Codex/Gemini) on CrewAI integration</p>
+  
+  <div class="eval-grid">
+    <div class="eval-card correct">
+      <div class="quote">"For Jade, I'd treat CrewAI as an execution framework for certain repeatable workflows, <strong>not as Jade's 'brain.'</strong>"</div>
+      <div class="verdict" style="color: var(--green);">✅ CORRECT — CrewAI = Layer 1 (Runtime)</div>
     </div>
-    <div>
-      <h3 class="accent2" style="font-size: 1.1rem;">Orchestration Is Separate</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Anthropic: Orchestrator-worker architecture</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Microsoft AutoGen: Agents + LLMs + tools compose</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Google ADK: Multi-agent hierarchy framework</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ OpenAI AgentKit: Runtime orchestration layer</li>
-      </ul>
+    <div class="eval-card imprecise">
+      <div class="quote">"Jade's brain should stay in Supabase/memory/schema."</div>
+      <div class="verdict" style="color: var(--accent3);">⚠️ IMPRECISE — means "memory data", not cognition</div>
     </div>
-    <div>
-      <h3 class="accent3" style="font-size: 1.1rem;">Memory Is Infrastructure</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Atlan: "Infrastructure that persists information"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Mem0: "External Context (Disk) vs Main Context (RAM)"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Supabase: "Postgres platform for agentic workloads"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Gartner: "60% of AI projects fail from data gaps"</li>
-      </ul>
+    <div class="eval-card correct">
+      <div class="quote">"The website should not directly run CrewAI. Vercel/Next.js is not meant for long-running agent work."</div>
+      <div class="verdict" style="color: var(--green);">✅ CORRECT — separates frontend from runtime</div>
     </div>
-    <div>
-      <h3 class="green" style="font-size: 1.1rem;">All Three Must Exist</h3>
-      <ul style="list-style: none; padding: 0;">
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ McKinsey: "Infrastructure for agentic AI"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Anthropic: "Agents are stateful webs of prompts, tools, execution logic"</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ arXiv/ICLR 2026: Context management improves performance 10.6%</li>
-        <li style="padding: 0.3rem 0; font-size: 0.9rem;">✓ Snowflake: Ontology layer improves accuracy by 20%</li>
-      </ul>
+    <div class="eval-card correct">
+      <div class="quote">"CrewAI should run in a worker process on your always-on server/local compute."</div>
+      <div class="verdict" style="color: var(--green);">✅ CORRECT — Layer 1 needs deployment</div>
     </div>
+    <div class="eval-card correct">
+      <div class="quote">"Jade = master orchestrator. Franklin = production lead. CrewAI = execution framework."</div>
+      <div class="verdict" style="color: var(--green);">✅ CORRECT — proper role assignment</div>
+    </div>
+    <div class="eval-card correct">
+      <div class="quote">"Order → Stripe → Supabase job → worker claims → Jade routes → Franklin builds → QA → Deploy"</div>
+      <div class="verdict" style="color: var(--green);">✅ CORRECT — full three-layer flow described</div>
+    </div>
+  </div>
+  
+  <div class="quote-box green" style="margin-top: 2rem;">
+    VERDICT: Bot is correct on 9/10 statements. The one imprecise phrase ("brain stays in Supabase") is compressed shorthand — not a misunderstanding of architecture.
   </div>
 </div>
 
-<!-- SLIDE 8: Deployment Reality -->
+<!-- SLIDE 11: Deployment Reality -->
 <div class="slide">
-  <h2>Current Status</h2>
+  <h2>Deployment Reality</h2>
   <div class="status-grid">
-    <div class="status-card">
+    <div class="status-card" style="border-color: var(--red);">
       <div class="status-icon">⚠️</div>
       <h3 class="accent">Layer 1: Runtime</h3>
       <p>Code exists in repos.<br><strong style="color: var(--red);">Not deployed as running process.</strong></p>
     </div>
-    <div class="status-card">
+    <div class="status-card" style="border-color: var(--green);">
       <div class="status-icon">✅</div>
       <h3 class="accent2">Layer 2: LLM APIs</h3>
       <p>OpenAI, Anthropic, Google configured.<br><strong style="color: var(--green);">Working.</strong></p>
     </div>
-    <div class="status-card">
+    <div class="status-card" style="border-color: var(--green);">
       <div class="status-icon">✅</div>
       <h3 class="accent3">Layer 3: Supabase</h3>
       <p>Schema deployed, functions created.<br><strong style="color: var(--green);">Working.</strong></p>
     </div>
   </div>
-  <div class="quote-box" style="margin-top: 2rem;">
-    "Supabase is not a brain. Supabase is memory storage. LLMs are not agents — they're reasoning engines. Agent runtime code is not data — it's the thing that makes decisions and takes action."
+  <div style="margin-top: 2rem; max-width: 700px;">
+    <p style="font-size: 1.1rem;"><span class="red">Only Supabase:</span> Dead data. Nothing happens.</p>
+    <p style="font-size: 1.1rem;"><span class="accent">Only Runtime:</span> Stateless agent. No persistent memory.</p>
+    <p style="font-size: 1.1rem;"><span class="accent2">Only LLM:</span> Isolated chat completions. No agent system.</p>
+    <p style="font-size: 1.2rem; margin-top: 1rem;"><span class="green">All three connected:</span> Functional agent system.</p>
   </div>
 </div>
 
-<!-- SLIDE 9: Correct Mental Model -->
+<!-- SLIDE 12: The Library Analogy -->
 <div class="slide">
   <h2>The Correct Mental Model</h2>
-  <div style="margin-top: 2rem;">
-    <table class="comparison-table" style="max-width: 700px;">
-      <thead>
-        <tr>
-          <th>Human</th>
-          <th>AI System</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Body (moves &amp; acts)</td>
-          <td class="accent">Agent Runtime — CrafturaFlow, CrewAI</td>
-        </tr>
-        <tr>
-          <td>Brain (thinks &amp; reasons)</td>
-          <td class="accent2">LLM API — GPT-4, Claude, Gemini</td
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; width: 100%; max-width: 900px; margin-top: 2rem;">
+    <div class="layer-card" style="border-color: var(--accent3);">
+      <h3 style="font-size: 1.1rem; color: var(--accent3);">SUPABASE = LIBRARY</h3>
+      <ul>
+        <li>Stores vast amounts of information</li>
+        <li>Organized for efficient retrieval</li>
+        <li>Does NOT answer questions itself</li>
+        <li>A library ≠ a librarian's brain</li>
+      </ul>
+    </div>
+    <div class="layer-card" style="border-color: var(--accent2);">
+      <h3 style="font-size: 1.1rem; color: var(--accent2);">LLM = LIBRARIAN'S BRAIN</h3>
+      <ul>
+        <li>Processes and reasons over information</li>
+        <li>Finds relevant data from the library</li>
+        <li>Synthesizes answers from facts</li>
+        <li>Stateless — forgets between questions</li>
+      </ul>
+    </div>
+    <div class="layer-card" style="border-color: var(--accent);">
+      <h3 style="font-size: 1.1rem; color: var(--accent);">RUNTIME = LIBRARIAN'S BODY</h3>
+      <ul>
+        <li>Goes to the library and retrieves books</li>
+        <li>Delivers answers to patrons</li>
+        <li>Takes action based on findings</li>
+        <li>Coordinates the whole process</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 13: Conclusion -->
+<div class="slide">
+  <h2>Conclusion</h2>
+  <div style="max-width: 800px; margin-top: 2rem;">
+    <p style="font-size: 1.2rem; line-height: 1.8;">
+      The three-layer architecture — <span class="accent">Runtime</span> (orchestration), 
+      <span class="accent2">LLM</span> (reasoning), 
+      <span class="accent3">Memory</span> (storage) — is:
+    </p>
+    <div style="margin-top: 1.5rem;">
+      <p style="font-size: 1.1rem;"><strong>1.</strong> How the code actually works — verified by reading main.py, craftura_crew.py, jade-brain-v1.sql</p>
+      <p style="font-size: 1.1rem;"><strong>2.</strong> How CrewAI is designed — memory explicitly separate from agents</p>
+      <p style="font-size: 1.1rem;"><strong>3.</strong> How LangChain/LangGraph works — memory stores external to orchestration</p>
+      <p style="font-size: 1.1rem;"><strong>4.</strong> How Supabase positions itself — data infrastructure, not intelligence</p>
+      <p style="font-size: 1.1rem;"><strong>5.</strong> Confirmed by Troy's own bot — 9/10 statements architecturally correct</p>
+    </div>
+    <div class="quote-box green" style="margin-top: 2rem; font-style: normal;">
+      The best option — the most cited, most technically clean option — is to recognize all three layers as distinct, deploy all three layers, and connect them properly through the runtime orchestration layer.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

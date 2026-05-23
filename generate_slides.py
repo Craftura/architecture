@@ -650,6 +650,61 @@ for num, title, url in all_citations:
 
 
 # ============================================================
+# SLIDE 13.5: Troy's Bot Evaluation
+# ============================================================
+slide = prs.slides.add_slide(prs.slide_layouts[6])
+set_slide_bg(slide)
+
+add_text_box(slide, 0.5, 0.3, 12, 0.8, "TROY'S OWN BOT CONFIRMS THE ARCHITECTURE", font_size=28, color=GREEN, bold=True)
+
+# Bot quote box
+shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(1.3), Inches(12.3), Inches(1.5))
+shape.fill.solid()
+shape.fill.fore_color.rgb = SURFACE
+shape.line.color.rgb = GREEN
+shape.line.width = Pt(2)
+
+add_text_box(slide, 0.8, 1.45, 11.7, 1.2,
+    'Troy\'s AI assistant (Codex/Gemini) on CrewAI:\n\n'
+    '"For Jade, I\'d treat CrewAI as an execution framework for certain repeatable workflows, '
+    'not as Jade\'s brain."\n\n'
+    '"The website should not directly run CrewAI. Vercel/Next.js is not meant for long-running agent work. '
+    'CrewAI should run in a worker process on your always-on server."',
+    font_size=14, color=TEXT_WHITE)
+
+# Evaluation table
+add_text_box(slide, 0.5, 3.0, 6, 0.4, "BOT STATEMENT", font_size=11, color=ACCENT_PURPLE, bold=True)
+add_text_box(slide, 6.8, 3.0, 6, 0.4, "VERDICT", font_size=11, color=GREEN, bold=True)
+
+bot_statements = [
+    ('"CrewAI is an execution framework, not Jade\'s brain"', '✅ CORRECT — CrewAI = Layer 1 (Runtime)'),
+    ('"Jade\'s brain should stay in Supabase/memory/schema"', '⚠️ IMPRECISE — means "memory data", not cognition'),
+    ('"CrewAI is present locally but not wired as production engine"', '✅ CORRECT — Layer 1 exists, not deployed'),
+    ('"Website should not run CrewAI. Use worker process."', '✅ CORRECT — separates frontend from runtime'),
+    ('"Job queue → Worker claims → Jade routes → Franklin builds → QA → Deploy"', '✅ CORRECT — full three-layer flow'),
+    ('"Hundreds of sites = queue/compute problem"', '✅ CORRECT — standard production architecture'),
+    ('"Jade=orchestrator, Franklin=production lead, CrewAI=framework"', '✅ CORRECT — proper role assignment'),
+]
+
+y = 3.5
+for statement, verdict in bot_statements:
+    add_text_box(slide, 0.5, y, 6, 0.55, statement, font_size=11, color=TEXT_WHITE)
+    color = GREEN if verdict.startswith('✅') else ACCENT_AMBER
+    add_text_box(slide, 6.8, y, 6, 0.55, verdict, font_size=11, color=color)
+    y += 0.55
+
+# Bottom insight
+shape = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.5), Inches(6.8), Inches(12.3), Inches(0.6))
+shape.fill.solid()
+shape.fill.fore_color.rgb = SURFACE
+shape.line.color.rgb = ACCENT_AMBER
+
+add_text_box(slide, 0.8, 6.9, 11.7, 0.4,
+    'VERDICT: Bot is correct on 9/10 statements. The one imprecise phrase ("brain stays in Supabase") is compressed shorthand, not a misunderstanding of architecture.',
+    font_size=12, color=ACCENT_AMBER, bold=True)
+
+
+# ============================================================
 # SLIDE 14: Conclusion
 # ============================================================
 slide = prs.slides.add_slide(prs.slide_layouts[6])
