@@ -1,4 +1,4 @@
-﻿# Architecture Agent Instructions
+# Architecture Agent Instructions
 <!-- JADE-BOOTSTRAP:START -->
 ## Jade / Tool-Agnostic Startup
 
