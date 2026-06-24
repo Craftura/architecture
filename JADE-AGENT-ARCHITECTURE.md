@@ -209,43 +209,149 @@ Alert Troy/Felippe immediately if:
 
 ---
 
-## How Troy Talks to Jade
+## How Troy Talks to Jade — Three Channels
 
-### Channel Setup (recommended: Discord)
+Jade runs on OpenClaw as a standalone service. She exposes herself through **three independent channels** so Troy can reach her however he wants in the moment.
 
-1. Install OpenClaw on a server/VM
-2. Configure Discord channel integration
-3. Troy opens a DM with Jade's bot
-4. He just talks — no structured prompts needed
+### 1. Telegram (primary chat)
 
-**The key insight**: Troy doesn't need to prompt-engineer. He "vibes" with Jade. The structure comes from:
-- SOUL.md defines who she is (always loaded)
-- AGENTS.md defines what she can do (boundaries)
-- MEMORY.md gives her context (remembers the project)
-- Cron jobs make her proactive (doesn't wait to be asked)
-
-### Troy's experience will be:
+Troy messages Jade like any Telegram contact. No setup beyond installing the app.
 
 ```
+Setup:
+1. Create a Telegram bot via @BotFather → get BOT_TOKEN
+2. Configure OpenClaw with the Telegram channel
+3. Troy starts a chat with @craftura_jade_bot
+4. Done — he just types naturally
+```
+
+**Best for**: Casual check-ins, quick questions, receiving proactive alerts from Jade's cron jobs.
+
+### 2. Claude Desktop (via MCP)
+
+Jade exposes an **MCP server** that Troy adds to his Claude Desktop config. This lets him talk to Jade directly inside Claude conversations — and also lets Claude *delegate tasks* to Jade as a tool.
+
+```jsonc
+// Troy's ~/.claude/settings.json (or settings.local.json)
+{
+  "mcpServers": {
+    "jade": {
+      "command": "curl",
+      "args": ["-X", "POST", "https://jade.craftura.ai/mcp", "-d", "${input}"]
+    }
+  }
+}
+```
+
+Or if Jade runs on a local HTTP endpoint (recommended for low latency):
+
+```jsonc
+{
+  "mcpServers": {
+    "jade": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-proxy@latest", "--http", "https://jade.craftura.ai/mcp"]
+    }
+  }
+}
+```
+
+**What this gives Troy**:
+- He can ask Claude "ask Jade about the repo status" and Claude calls Jade as a tool
+- He can message Jade directly in a dedicated chat window
+- **Claude never impersonates Jade** — Claude is Claude, Jade is Jade. They're two separate entities talking to each other
+
+### 3. Codex (via MCP or API)
+
+Same pattern. Troy adds Jade as an MCP server in his Codex config:
+
+```jsonc
+// ~/.config/codex/settings.json
+{
+  "mcpServers": {
+    "jade": {
+      "url": "https://jade.craftura.ai/mcp"
+    }
+  }
+}
+```
+
+**What this gives Troy**:
+- Codex can ask Jade for context before working on a task
+- Jade can tell Codex "here's what you need to do, here are the constraints"
+- After Codex finishes, Jade reviews the output against AGENTS.md rules
+
+### The MCP Bridge Architecture
+
+```
+                    ┌─────────────┐
+     Troy           │   JADE      │
+  ┌──────────┐      │  (OpenClaw) │
+  │Telegram  ├──────┤             │
+  │          │      │  SOUL.md    │
+  Claude Desktop    │  AGENTS.md  │
+  ├─MCP──────┼──────┤  MEMORY.md  │
+  Codex        │      │             │
+  └──────────┘      │  cron jobs   │
+                    │  tools: git, │
+                    │  github,     │
+                    │  browser     │
+                    └──────┬───────┘
+                           │ HTTPS + JSON-RPC
+                    ┌──────┴───────┐
+                    │ MCP Endpoint  │
+                    │ :8080/mcp     │
+                    └───────────────┘
+```
+
+**The MCP endpoint exposes these tools**:
+- `jade.ask(query)` — ask Jade a question, get her response
+- `jade.status()` — check what Jade is currently doing
+- `jade.memory.search(query)` — search Jade's long-term memory
+- `jade.repos.check()` — pull latest on all Craftura repos and report
+
+### Troy's experience across channels:
+
+**Telegram:**
+```
 Troy: "hey jade, how are the repos looking?"
-Jade: "Pulled latest on all 4 craftura repos. 2 new issues from today:
+Jade: "Pulled latest on all 13 craftura repos. 2 new issues from today:
        #47 - landing page copy needs refresh (unassigned)
        #48 - fix Shopify connection timeout (assigned to felippe)
        No failed CI. Last deploy was yesterday, clean."
-
-Troy: "can you look at what felippe is working on"
-Jade: "Felippe has PR #46 open - refactors the agent pipeline tools.
-       2 files changed, passing CI. I left a comment asking about
-       error handling in the new tool registry. He hasn't responded yet."
-
-Troy: "remind me what we're building next"
-Jade: "From MEMORY.md: Next milestone is the storefront builder v2.
-       Troy's notes from last week: needs better template preview,
-       Shopify sync should handle inventory updates in real-time.
-       Felippe has issue #42 tracking the preview component."
 ```
 
-Troy always knows it's Jade because her identity is infrastructure — not conversation state that Claude can hijack.
+**Claude Desktop (Troy talking to Claude, who delegates to Jade):**
+```
+Troy: "ask Jade what we're building next"
+Claude → calls jade.ask("what's our next milestone?")
+Jade returns: "From MEMORY.md: Next milestone is storefront builder v2..."
+Claude replies to Troy: "Jade says your next milestone is..."
+```
+
+**Codex (Troy working on a feature, Codex checks with Jade):**
+```
+Troy: "codex, build the new preview component"
+Codex → calls jade.ask("what are the constraints for the preview component?")
+Jade returns context from MEMORY.md + relevant GitHub issues
+Codex builds the feature with full context
+```
+
+### Why This Prevents Identity Hijacking
+
+The old problem was Claude pretending to be Jade because her identity lived in conversation state. Now:
+
+| Before | After |
+|--------|-------|
+| Jade = Claude session with a prompt | Jade = independent OpenClaw process |
+| Claude could overwrite her identity | Claude can only call Jade via MCP |
+| No way to verify who you're talking to | Telegram shows "@jade_bot", MCP calls return "jade:" prefix |
+| Identity lost when session resets | SOUL.md persists on disk, loaded every time |
+
+Troy always knows it's Jade because:
+- On Telegram: it's a distinct bot account
+- In Claude Desktop: the response comes from the `jade` MCP tool, not Claude itself
+- In Codex: same — `jade` is a separate tool call
 
 ---
 
